@@ -11,18 +11,32 @@ pipeline {
                 sh 'npm install'
             }
         }
-	stage('Test') {
-	    steps {
+	    stage('Test') {
+            steps {
                 sh './jenkins/scripts/test.sh'
+            }
+        }
+        stage('Manual Approval') {
+            steps {
+                input message: 'Lanjutkan ke tahap Deploy?'
+            }
+            post {
+                aborted {
+                    echo 'Deploy stage dibatalkan'
+                }
             }
         }
         stage('Deploy') { 
             steps {
                 sh './jenkins/scripts/deliver.sh' 
-                // input message: 'Sudah selesai menggunakan React App? (Klik "Proceed" untuk mengakhiri)' 
-		sleep time: 1, unit: 'MINUTES'
+		        sleep time: 1, unit: 'MINUTES'
                 sh './jenkins/scripts/kill.sh' 
             }
+        }
+    }
+    post {
+        aborted {
+            echo 'Eksekusi pipeline dihentikan'
         }
     }
 }
